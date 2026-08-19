@@ -10,7 +10,6 @@ import studentRoutes from './routes/students.js'
 import userRoutes from './routes/users.js'
 import courseRoutes from './routes/courses.js'
 import { errorHandler, notFound } from './middleware/errorHandler.js'
-import prisma from './lib/prisma.js'
 
 
 dotenv.config();
@@ -19,10 +18,7 @@ const app = express()
 
 // CORS — restrict to the frontend origin (Vite dev server).
 // For production, replace with the deployed frontend URL.
-const allowedOrigins = (process.env.CORS_ORIGIN || 'http://localhost:5173')
-  .split(',')
-  .map((origin) => origin.trim())
-  .filter(Boolean)
+const allowedOrigins = (process.env.CORS_ORIGIN || 'http://localhost:5173').split(',')
 app.use(cors({ origin: allowedOrigins }))
 
 app.use(express.json())
@@ -41,26 +37,14 @@ app.use('/api/', limiter)
 // Stricter rate limit for login (prevent brute force)
 const loginLimiter = rateLimit({
   windowMs: 15 * 60 * 1000,
-  max: 10,  // limit failed login attempts without blocking normal retries
-  skipSuccessfulRequests: true,
+  max: 5,  // only 5 login attempts per 15 minutes
   message: 'Too many login attempts, please try again later.',
 })
-// Vercel functions do not share reliable in-memory state between instances.
-// Keep the dedicated limiter for local/server deployments and rely on the
-// broader API limiter on Vercel.
-if (process.env.VERCEL !== '1') {
-  app.use('/api/auth/login', loginLimiter)
-}
+app.use('/api/auth/login', loginLimiter)
 
-// Health endpoint (no auth) — verifies both Express and PostgreSQL
-app.get('/api/health', async (req, res) => {
-  try {
-    await prisma.$queryRaw`SELECT 1`
-    res.json({ status: 'ok', message: 'Server and database are running' })
-  } catch (error) {
-    console.error('Health check database error:', error)
-    res.status(503).json({ status: 'error', message: 'Database is unavailable' })
-  }
+// Health endpoint (no auth) — place before mounting authenticated API routes
+app.get('/api/health', (req, res) => {
+  res.json({ status: 'ok', message: 'Server is running' })
 })
 
 app.use('/api/auth', authRoutes)
