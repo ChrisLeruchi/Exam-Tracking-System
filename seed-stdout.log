@@ -1,0 +1,11 @@
+◇ injected env (6) from .env // tip: ⌁ auth for agents [www.vestauth.com]
+Prisma: connected using PrismaPg adapter
+🌱 Registering 145 students...
+✅ Created 109 students
+⏭️  Skipped 36 (already exist)
+📊 Total students in database: 145
+
+📋 Login credentials:
+   Admin:        admin_johnson / admin123
+   Lecturer:     lecturer_okoro / lecturer123
+   Exam Officer: examofficer_bello / exam123

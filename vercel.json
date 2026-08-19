@@ -1,0 +1,11 @@
+{
+  "buildCommand": "npm run build --prefix exam-tamper-frontend",
+  "outputDirectory": "exam-tamper-frontend/dist",
+  "installCommand": "npm install --prefix exam-tamper-frontend",
+  "rewrites": [
+    {
+      "source": "/((?!api/).*)",
+      "destination": "/index.html"
+    }
+  ]
+}
