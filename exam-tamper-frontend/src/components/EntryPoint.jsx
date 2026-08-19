@@ -20,7 +20,17 @@ export function EntryPoint() {
       const user = await login(username, password)
       navigate('/dashboard')
     } catch (err) {
-      setError(err.response?.data?.error || 'Login failed. Check your connection.')
+      if (err.response?.data?.error) {
+        // Backend returned a clear error (invalid credentials, rate limit, etc.)
+        setError(err.response.data.error)
+      } else if (!err.response) {
+        // Network failure: backend unreachable or CORS blocked the response.
+        setError(
+          'Cannot reach the server. Verify the backend is running and that VITE_API_URL points to the deployed API (e.g. https://<backend>/api), then check the browser Console for CORS errors.'
+        )
+      } else {
+        setError('Login failed. If this persists, check the server logs and CORS configuration.')
+      }
     } finally {
       setLoading(false)
     }
