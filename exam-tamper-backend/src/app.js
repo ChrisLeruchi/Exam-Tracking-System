@@ -45,7 +45,12 @@ const loginLimiter = rateLimit({
   skipSuccessfulRequests: true,
   message: 'Too many login attempts, please try again later.',
 })
-app.use('/api/auth/login', loginLimiter)
+// Vercel functions do not share reliable in-memory state between instances.
+// Keep the dedicated limiter for local/server deployments and rely on the
+// broader API limiter on Vercel.
+if (process.env.VERCEL !== '1') {
+  app.use('/api/auth/login', loginLimiter)
+}
 
 // Health endpoint (no auth) — verifies both Express and PostgreSQL
 app.get('/api/health', async (req, res) => {
