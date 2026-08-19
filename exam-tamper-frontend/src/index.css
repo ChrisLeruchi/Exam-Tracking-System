@@ -1,0 +1,64 @@
+@import url('https://googleapis.com');
+
+@import "tailwindcss";
+
+@theme {
+   --font-sans: 'Montserrat', system-ui, 'Segoe UI', Roboto, sans-serif;
+  --font-mono: 'JetBrains Mono', ui-monospace, SFMono-Regular, Menlo, monospace;
+  --font-display: 'Space Grotesk', system-ui, 'Segoe UI', sans-serif;
+
+  --text-2xs: 0.75rem;   /* 12px */
+  --text-xs: 0.8125rem;  /* 13px */
+  --text-sm: 0.875rem;   /* 14px */
+  --text-base: 0.9375rem;/* 15px */
+  --text-md: 1rem;       /* 16px */
+  --text-lg: 1.125rem;   /* 18px */
+  --text-xl: 1.5rem;     /* 24px */
+
+  /* Surfaces */
+  --color-surface-page: #141312;
+  --color-surface-card: #1E1D1A;
+  --color-surface-muted: #2E2D27;
+  --color-border: #3A382F;
+  --color-border-strong: #4D4A3E;
+
+  /* Text */
+  --color-text-primary: #EDECE6;
+  --color-text-secondary: #A8A69D;
+  --color-text-muted: #77756D;
+
+  /* Accent (blue) */
+  --color-accent-50: #16324A;
+  --color-accent-200: #2979FF;
+  --color-accent-400: #4A85BD;
+  --color-accent-600: #7EB8EA;
+  --color-accent-800: #B8DAF7;
+
+  /* Danger (red) — tamper alerts */
+  --color-danger-50: #3D1919;
+  --color-danger-200: #5E2626;
+  --color-danger-400: #B4504F;
+  --color-danger-600: #E27A79;
+  --color-danger-800: #F0A0A0;
+
+  /* Success (green) — resolved alerts */
+  --color-success-50: #243A0F;
+  --color-success-200: #37581A;
+  --color-success-400: #6C9A3F;
+  --color-success-600: #94C264;
+  --color-success-800: #A4D46E;
+
+  --radius-control: 8px;
+  --radius-card: 12px;
+}
+
+body {
+  margin: 0;
+  background: var(--color-surface-page);
+  color: var(--color-text-primary);
+}
+
+/* Custom flex ratio utilities (Tailwind v4 only ships flex-1 by default) */
+.flex-6 {
+  flex: 6 1 0%;
+}

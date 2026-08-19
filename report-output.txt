@@ -1,0 +1,6 @@
+(node:19284) [MODULE_TYPELESS_PACKAGE_JSON] Warning: Module type of file:///C:/Users/Christopher%20Igwe/Desktop/EXAMINATION%20RESULT%20TAMPER%20TRACKING%20SYSTEM/generate-report.js is not specified and it doesn't parse as CommonJS.
+Reparsing as ES module because module syntax was detected. This incurs a performance overhead.
+To eliminate this warning, add "type": "module" to C:\Users\Christopher Igwe\Desktop\EXAMINATION RESULT TAMPER TRACKING SYSTEM\package.json.
+(Use `node --trace-warnings ...` to show where the warning was created)
+✅ Report generated successfully: C:\Users\Christopher Igwe\Desktop\EXAMINATION RESULT TAMPER TRACKING SYSTEM\Examination_Result_Tracking_System_Report.docx
+File size: 49.61 KB

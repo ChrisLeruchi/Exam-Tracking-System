@@ -1,0 +1,203 @@
+
+
+generator client {
+  provider = "prisma-client"
+  output   = "../generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+model User {
+  id            Int      @id @default(autoincrement())
+  username      String   @unique
+  passwordHash  String
+  role          Role     @default(LECTURER)
+  fullName      String
+  email         String?
+  isActive      Boolean  @default(true)
+  lastLogin     DateTime?
+  createdAt     DateTime @default(now())
+
+  // Relations — a user can be linked to many things
+  courses         Course[]         // lecturer's courses
+  resultsCreated  Result[]         // results they first entered
+  resultVersions  ResultVersion[]  // result changes they made
+  auditLogs       AuditLog[]       // audit entries they created
+  publications    Publication[]    // results they published
+  flagResolutions FlagResolution[] // flags they resolved
+
+  @@map("users")
+}
+
+// ==================== COURSES ====================
+// Subjects like "CEN 552: Digital System Design"
+model Course {
+  id             Int      @id @default(autoincrement())
+  code           String   @unique
+  title          String
+  lecturerId     Int
+  semester       String   @default("First")
+  academicSession String  @default("2025/2026")
+  createdAt      DateTime @default(now())
+
+  // Relations
+  lecturer     User         @relation(fields: [lecturerId], references: [id])
+  enrollments  Enrollment[]
+  results      Result[]
+  publications Publication[]
+
+  @@map("courses")
+}
+
+// ==================== STUDENTS ====================
+// The people being graded
+model Student {
+  id         Int      @id @default(autoincrement())
+  matNo      String   @unique
+  fullName   String
+  department String   @default("Computer Engineering")
+  level      String   @default("500")
+  createdAt  DateTime @default(now())
+
+  // Relations
+  enrollments Enrollment[]
+  results     Result[]
+
+  @@map("students")
+}
+
+model Enrollment {
+  id        Int @id @default(autoincrement())
+  studentId Int
+  courseId  Int
+
+  student Student @relation(fields: [studentId], references: [id])
+  course  Course  @relation(fields: [courseId], references: [id])
+
+  // A student can only be enrolled in a course once
+  @@unique([studentId, courseId])
+  @@map("enrollments")
+}
+
+// ==================== RESULTS ====================
+// The CURRENT score — this is the ONLY table that gets UPDATEd
+model Result {
+  id            Int      @id @default(autoincrement())
+  studentId     Int
+  courseId      Int
+  currentScore  Int?
+  currentGrade  String?
+  isPublished   Boolean  @default(false)
+  createdBy     Int
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  // Relations
+  student       Student          @relation(fields: [studentId], references: [id])
+  course        Course           @relation(fields: [courseId], references: [id])
+  createdByUser User             @relation(fields: [createdBy], references: [id])
+  versions      ResultVersion[]
+
+  // One result per student per course
+  @@unique([studentId, courseId])
+  @@map("results")
+}
+
+// ==================== RESULT VERSIONS (APPEND-ONLY) ====================
+// Every score change creates a NEW row here. Never UPDATEd, never DELETEd.
+// This is the tamper-proof version history.
+model ResultVersion {
+  id             Int      @id @default(autoincrement())
+  resultId       Int
+  score          Int?
+  grade          String?
+  previousScore  Int?
+  previousGrade  String?
+  changedBy      Int
+  changedByRole  Role
+  changedAt      DateTime @default(now())
+  reason         String   @default("correction")
+  previousHash   String?
+  currentHash    String
+  flagged        Boolean  @default(false)
+  flagReason     String?
+  ipAddress      String?
+  userAgent      String?
+
+  // Relations
+  result    Result @relation(fields: [resultId], references: [id])
+  changedByUser User @relation(fields: [changedBy], references: [id])
+  resolutions FlagResolution[] // resolutions linked to this version
+
+  @@index([resultId])
+  @@index([changedBy])
+  @@map("result_versions")
+}
+
+// ==================== FLAG RESOLUTIONS (APPEND-ONLY) ====================
+// When an admin resolves a tamper flag, a new row is created here.
+// This preserves the append-only nature of result_versions — we never
+// UPDATE result_versions, we just add a resolution record that references it.
+model FlagResolution {
+  id           Int      @id @default(autoincrement())
+  versionId    Int      // references result_versions.id (the flagged version)
+  resolvedBy   Int      // the admin who resolved it
+  resolution   String   // explanation of why the flag is OK
+  resolvedAt   DateTime @default(now())
+
+  // Relations
+  version      ResultVersion @relation(fields: [versionId], references: [id])
+  resolvedByUser User        @relation(fields: [resolvedBy], references: [id])
+
+  @@index([versionId])
+  @@map("flag_resolutions")
+}
+
+// ==================== PUBLICATIONS ====================
+// Records when results were officially published (after this, changes are flagged)
+model Publication {
+  id           Int      @id @default(autoincrement())
+  courseId     Int
+  publishedAt  DateTime @default(now())
+  publishedBy  Int
+
+  course       Course @relation(fields: [courseId], references: [id])
+  publishedByUser User @relation(fields: [publishedBy], references: [id])
+
+  @@map("publications")
+}
+
+// ==================== AUDIT LOG (APPEND-ONLY) ====================
+// Master paper trail — records EVERY action in the system
+// Never UPDATEd, never DELETEd. Hash-chained like result_versions.
+model AuditLog {
+  id           Int      @id @default(autoincrement())
+  entityType   String   // "result", "user", "course", "publication"
+  entityId     Int
+  action       String   // "create", "update", "publish", "login", "flag_resolve"
+  oldValue     Json?
+  newValue     Json?
+  userId       Int
+  timestamp    DateTime @default(now())
+  previousHash String?
+  currentHash  String
+  ipAddress    String?
+  userAgent    String?
+
+  user User @relation(fields: [userId], references: [id])
+
+  @@index([entityType, entityId])
+  @@index([userId])
+  @@map("audit_log")
+}
+
+// ==================== ENUMS ====================
+// Role options for users
+enum Role {
+  ADMIN
+  LECTURER
+  EXAM_OFFICER
+}
+
