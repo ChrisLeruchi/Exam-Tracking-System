@@ -10,6 +10,7 @@ import studentRoutes from './routes/students.js'
 import userRoutes from './routes/users.js'
 import courseRoutes from './routes/courses.js'
 import { errorHandler, notFound } from './middleware/errorHandler.js'
+import prisma from './lib/prisma.js'
 
 
 dotenv.config();
@@ -18,7 +19,10 @@ const app = express()
 
 // CORS — restrict to the frontend origin (Vite dev server).
 // For production, replace with the deployed frontend URL.
-const allowedOrigins = (process.env.CORS_ORIGIN || 'http://localhost:5173').split(',')
+const allowedOrigins = (process.env.CORS_ORIGIN || 'http://localhost:5173')
+  .split(',')
+  .map((origin) => origin.trim())
+  .filter(Boolean)
 app.use(cors({ origin: allowedOrigins }))
 
 app.use(express.json())
@@ -42,9 +46,15 @@ const loginLimiter = rateLimit({
 })
 app.use('/api/auth/login', loginLimiter)
 
-// Health endpoint (no auth) — place before mounting authenticated API routes
-app.get('/api/health', (req, res) => {
-  res.json({ status: 'ok', message: 'Server is running' })
+// Health endpoint (no auth) — verifies both Express and PostgreSQL
+app.get('/api/health', async (req, res) => {
+  try {
+    await prisma.$queryRaw`SELECT 1`
+    res.json({ status: 'ok', message: 'Server and database are running' })
+  } catch (error) {
+    console.error('Health check database error:', error)
+    res.status(503).json({ status: 'error', message: 'Database is unavailable' })
+  }
 })
 
 app.use('/api/auth', authRoutes)

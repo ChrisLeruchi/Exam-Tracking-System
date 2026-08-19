@@ -1,9 +1,3 @@
 {
-  "buildCommand": "npx prisma generate",
-  "routes": [
-    {
-      "source": "/(.*)",
-      "dest": "/api/index.js"
-    }
-  ]
+  "buildCommand": "npx prisma generate"
 }
