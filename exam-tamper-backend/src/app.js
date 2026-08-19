@@ -41,7 +41,8 @@ app.use('/api/', limiter)
 // Stricter rate limit for login (prevent brute force)
 const loginLimiter = rateLimit({
   windowMs: 15 * 60 * 1000,
-  max: 5,  // only 5 login attempts per 15 minutes
+  max: 10,  // limit failed login attempts without blocking normal retries
+  skipSuccessfulRequests: true,
   message: 'Too many login attempts, please try again later.',
 })
 app.use('/api/auth/login', loginLimiter)
