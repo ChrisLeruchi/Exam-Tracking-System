@@ -6,6 +6,9 @@ const router = Router()
 
 // POST /api/auth/login — public route (no auth required)
 router.post('/login', login)
+router.get('/login', (req, res) => {
+	res.status(405).json({ error: 'Use POST /api/auth/login with username and password.' })
+})
 
 // GET /api/auth/me — protected route (requires auth)
 router.get('/me', requireAuth, getMe)

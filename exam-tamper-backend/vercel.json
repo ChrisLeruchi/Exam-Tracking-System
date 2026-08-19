@@ -1,9 +1,9 @@
 {
   "buildCommand": "npx prisma generate",
-  "rewrites": [
+  "routes": [
     {
       "source": "/(.*)",
-      "destination": "/api"
+      "dest": "/api/index.js"
     }
   ]
 }
