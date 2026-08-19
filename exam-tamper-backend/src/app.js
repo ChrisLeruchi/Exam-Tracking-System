@@ -18,7 +18,10 @@ const app = express()
 
 // CORS — restrict to the frontend origin (Vite dev server).
 // For production, replace with the deployed frontend URL.
-const allowedOrigins = (process.env.CORS_ORIGIN || 'http://localhost:5173').split(',')
+const allowedOrigins = (process.env.CORS_ORIGIN || 'http://localhost:5173')
+  .split(',')
+  .map((origin) => origin.trim())
+  .filter(Boolean)
 app.use(cors({ origin: allowedOrigins }))
 
 app.use(express.json())
