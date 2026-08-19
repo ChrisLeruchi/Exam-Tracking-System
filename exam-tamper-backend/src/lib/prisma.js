@@ -6,11 +6,12 @@ dotenv.config()
 
 let prisma
 let prismaConnected = false
+const databaseUrl = process.env.DIRECT_URL || process.env.DATABASE_URL
 
 // Try the PrismaPg adapter first (used for prisma+postgres setups).
 // If it fails (connection closed or adapter issues), fall back to the default PrismaClient
 try {
-	const adapter = new PrismaPg({ connectionString: process.env.DIRECT_URL })
+	const adapter = new PrismaPg({ connectionString: databaseUrl })
 	prisma = new PrismaClient({ adapter })
 	// Test connection; top-level await is supported in Node.js ESM
 	await prisma.$connect()
@@ -38,7 +39,7 @@ if (!prismaConnected) {
 			if (!prisma || typeof prisma.$connect !== 'function') {
 				// reinitialize Prisma client
 				try {
-					const adapter = new PrismaPg({ connectionString: process.env.DIRECT_URL })
+					const adapter = new PrismaPg({ connectionString: databaseUrl })
 					prisma = new PrismaClient({ adapter })
 				} catch (e) {
 					prisma = new PrismaClient()

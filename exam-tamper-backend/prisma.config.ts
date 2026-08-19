@@ -9,7 +9,6 @@ export default defineConfig({
     path: "prisma/migrations",
   },
   datasource: {
-    // Force the Prisma CLI to use the DIRECT_URL for migrations
-    url: env("DIRECT_URL"), 
+    url: process.env.DIRECT_URL || env("DATABASE_URL"),
   },
 });
